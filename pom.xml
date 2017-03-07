@@ -25,11 +25,6 @@
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-servlets</artifactId>
-      <version>9.3.16.v20170120</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
       <version>9.3.16.v20170120</version>
     </dependency>
@@ -39,21 +34,47 @@
       <version>9.3.16.v20170120</version>
     </dependency>
   </dependencies>
+
+
+  
   <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <configuration>
-          <archive>
-            <manifest>
-              <mainClass>fully.qualified.MainClass</mainClass>
-            </manifest>
-          </archive>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
-        </configuration>
-      </plugin>
-    </plugins>
+	<plugins>
+	  <plugin>
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-assembly-plugin</artifactId>
+		<executions>
+		  <execution>
+			<goals>
+			  <goal>attached</goal>
+			</goals>
+			<phase>package</phase>
+			<configuration>
+			  <descriptorRefs>
+				<descriptorRef>jar-with-dependencies</descriptorRef>
+			  </descriptorRefs>
+			  <archive>
+				<manifestEntries>
+				  <Premain-Class>com.nabto.cassandra.prometheus.Exporter</Premain-Class>
+				  <Agent-Class>com.nabto.cassandra.prometheus.Exporter</Agent-Class>
+				  <Can-Redefine-Classes>true</Can-Redefine-Classes>
+				  <Can-Retransform-Classes>true</Can-Retransform-Classes>
+				</manifestEntries>
+			  </archive>
+			</configuration>
+		  </execution>
+		</executions>
+	  </plugin>
+
+	  <plugin>
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-compiler-plugin</artifactId>
+		<version>2.3.2</version>
+		<configuration>
+		  <source>1.5</source>
+		  <target>1.5</target>
+		</configuration>
+	  </plugin>
+	  
+	</plugins>
   </build>
 </project>

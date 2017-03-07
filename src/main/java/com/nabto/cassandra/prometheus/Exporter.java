@@ -10,7 +10,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 
 import org.apache.cassandra.metrics.CassandraMetricsRegistry;
 
-public class App 
+public class Exporter 
 {
     public static void main( String[] args ) throws Exception
     {

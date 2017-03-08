@@ -5,6 +5,8 @@ import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.MetricsServlet;
 
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
@@ -15,7 +17,13 @@ public class PrometheusExporter
     private Server server;
     
     public PrometheusExporter(int port) {
-        server = new Server(port);
+        QueuedThreadPool threadPool = new QueuedThreadPool(10);
+        server = new Server(threadPool);
+
+        ServerConnector connector = new ServerConnector(server);
+        connector.setPort(port);
+        server.addConnector(connector);
+
         ServletContextHandler context = new ServletContextHandler();
         context.setContextPath("/");
         server.setHandler(context);

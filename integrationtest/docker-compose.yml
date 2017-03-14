@@ -1,0 +1,35 @@
+version: '2'
+services:
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    expose:
+      - 9090
+    ports:
+      - 9090:9090
+    depends_on:
+      - cassandra
+  cassandra:
+    build: cassandra
+    mem_limit: 700m
+    volumes:
+      - cassandra-data:/var/lib/cassandra
+    environment:
+      - CASSANDRA_CLUSTER_NAME=test
+      - CASSANDRA_DC=test
+      - CASSANDRA_NUM_TOKENS=32
+      - MAX_HEAP_SIZE=196M
+      - HEAP_NEWSIZE=32M
+    restart: always
+    expose:
+      - 9042
+      - 7400
+    ports:
+      - 7400:7400
+volumes:
+  cassandra-data:
+  prometheus-data:
+  
+

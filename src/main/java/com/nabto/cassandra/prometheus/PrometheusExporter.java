@@ -1,6 +1,5 @@
 package com.nabto.cassandra.prometheus;
 
-import io.prometheus.client.dropwizard.DropwizardExports;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.MetricsServlet;
 
@@ -17,7 +16,8 @@ public class PrometheusExporter
     private Server server;
     
     public PrometheusExporter(int port) {
-        QueuedThreadPool threadPool = new QueuedThreadPool(10);
+        
+        QueuedThreadPool threadPool = new QueuedThreadPool(25);
         server = new Server(threadPool);
 
         ServerConnector connector = new ServerConnector(server);
@@ -30,7 +30,7 @@ public class PrometheusExporter
 
         CollectorRegistry collectorRegistry = new CollectorRegistry();
         
-        collectorRegistry.register(new DropwizardExports(CassandraMetricsRegistry.Metrics));
+        collectorRegistry.register(new PrometheusExports(CassandraMetricsRegistry.Metrics));
 
         MetricsServlet metricsServlet = new MetricsServlet(collectorRegistry);
 
@@ -40,5 +40,5 @@ public class PrometheusExporter
         } catch (Exception e) {
             System.err.println("cannot start metrics http server " + e.getMessage());
         }
-    }    
+    }
 }

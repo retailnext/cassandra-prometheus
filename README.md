@@ -21,3 +21,16 @@ to the deployment and run the cassandra instance with an extra
 ```
 echo 'JVM_OPTS="$JVM_OPTS -javaagent:/usr/share/cassandra/lib/cassandra-prometheus-1.0-SNAPSHOT-jar-with-dependencies.jar=7400"' >> /etc/cassandra/cassandra-env.sh
 ```
+
+
+## Running the integration test
+
+```
+cd integrationtest
+cp ../target/cassandra-prometheus-1.0-SNAPSHOT-jar-with-dependencies.jar cassandra/
+docker-compose pull
+docker-compose build
+docker-compose up -d
+```
+
+Open a browser to the address 127.0.0.1:9090 and see that cassandra gets scraped.

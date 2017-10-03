@@ -15,7 +15,7 @@ public class PrometheusExporter
 {
     private Server server;
     
-    public PrometheusExporter(int port) {
+    public PrometheusExporter(int port, String path) {
         
         QueuedThreadPool threadPool = new QueuedThreadPool(25);
         server = new Server(threadPool);
@@ -34,7 +34,7 @@ public class PrometheusExporter
 
         MetricsServlet metricsServlet = new MetricsServlet(collectorRegistry);
 
-        context.addServlet(new ServletHolder(metricsServlet), "/metrics");
+        context.addServlet(new ServletHolder(metricsServlet), "/" + path);
         try {
             server.start();
         } catch (Exception e) {

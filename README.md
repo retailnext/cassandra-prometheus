@@ -22,6 +22,11 @@ to the deployment and run the cassandra instance with an extra
 echo 'JVM_OPTS="$JVM_OPTS -javaagent:/usr/share/cassandra/lib/cassandra-prometheus-2.0-SNAPSHOT-jar-with-dependencies.jar=7400"' >> /etc/cassandra/cassandra-env.sh
 ```
 
+To use a different path than `/metrics`, e.g `/prometheus`:
+```
+-javaagent:/usr/share/cassandra/lib/cassandra-prometheus-2.0-SNAPSHOT-jar-with-dependencies.jar=7400:prometheus"
+```
+
 ## Running the integration test
 
 ```

@@ -44,6 +44,7 @@ class MetricMetadata {
                 case "ClientRequestMetrics":
                     name = "cassandra_client_request_" + CamelCase.toSnakeCase(typeAndNameMatcher.group(2));
                     break;
+                case "Connection":
                 case "ColumnFamily":
                     // Do not report aggregated/rolled-up metrics.
                     doNotReport = true;
@@ -68,12 +69,18 @@ class MetricMetadata {
                     labelNames.add("type");
                     labelValues.add(typeAndScopeAndNameMatcher.group(2).toLowerCase());
                     break;
+                case "Connection":
+                    name = "cassandra_outbound_" + CamelCase.toSnakeCase(typeAndScopeAndNameMatcher.group(3));
+                    labelNames.add("address");
+                    labelValues.add(typeAndScopeAndNameMatcher.group(2).toLowerCase());
+                    break;
                 default:
                     LOGGER.warning("unhandled metric: " + mbean);
                     doNotReport = true;
             }
         } else if (typeAndKeyspaceAndScopeAndNameMatcher.find()) {
             switch (typeAndKeyspaceAndScopeAndNameMatcher.group(1)) {
+                case "IndexColumnFamily":
                 case "ColumnFamily":
                     name = "cassandra_" + CamelCase.toSnakeCase(typeAndKeyspaceAndScopeAndNameMatcher.group(4));
                     labelNames.add("keyspace");

@@ -1,32 +1,46 @@
 package com.nabto.cassandra.prometheus;
 
+import com.yammer.metrics.Metrics;
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.exporter.HTTPServer;
+import io.prometheus.client.hotspot.DefaultExports;
+
 import java.lang.instrument.Instrumentation;
+import java.net.InetSocketAddress;
 
 public class Exporter {
-    private static final String USAGE = "Usage: <port>[:<path>]";
 
-    public static void premain(String agentArg, Instrumentation inst) {
-        String[] args = agentArg.split(":");
-        if (args.length > 2) {
-            System.err.println(USAGE);
+    public static void premain(String agentArgument, Instrumentation instrumentation) throws Exception {
+        // Bind to all interfaces by default (this includes IPv6).
+        String host = "0.0.0.0";
+
+        // If we have IPv6 address in square brackets, extract it first and then
+        // remove it from arguments to prevent confusion from too many colons.
+        Integer indexOfClosingSquareBracket = agentArgument.indexOf("]:");
+        if (indexOfClosingSquareBracket >= 0) {
+            host = agentArgument.substring(0, indexOfClosingSquareBracket + 1);
+            agentArgument = agentArgument.substring(indexOfClosingSquareBracket + 2);
         }
 
-        int port = 7400;
-        try {
-            port = Integer.parseInt(args[0]);
-        } catch (Exception e) {
-            System.err.println(USAGE + ". No port specified so using default port for cassandra prometheus exporter " + port);
+        String[] args = agentArgument.split(":");
+        if (args.length < 1 || args.length > 2) {
+            System.err.println("Usage: -javaagent:/path/to/JavaAgent.jar=[host:]<port>");
+            System.exit(1);
         }
 
-        String path = "metrics";
+        int port;
+        InetSocketAddress socket;
+
         if (args.length == 2) {
-            if (args[1].length() > 0) {
-                path = args[1];
-            } else {
-                System.err.println(USAGE + ". Invalid path defined so using default path for cassandra prometheus exporter: " + path);
-            }
+            port = Integer.parseInt(args[1]);
+            socket = new InetSocketAddress(args[0], port);
+        } else {
+            port = Integer.parseInt(args[0]);
+            socket = new InetSocketAddress(host, port);
         }
 
-        PrometheusExporter exp = new PrometheusExporter(port, path);
+        new PrometheusExports(Metrics.defaultRegistry()).register();
+        DefaultExports.initialize();
+        new HTTPServer(socket, CollectorRegistry.defaultRegistry, true);
     }
 }

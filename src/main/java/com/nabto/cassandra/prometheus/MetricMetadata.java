@@ -16,6 +16,8 @@ class MetricMetadata {
     private static Pattern typeAndScopeAndNamePattern = Pattern.compile("^org\\.apache\\.cassandra\\.metrics:type=([^,]+),scope=([^,]+),name=([^,]+)$");
     private static Pattern typeAndKeyspaceAndScopeAndNamePattern = Pattern.compile("^org\\.apache\\.cassandra\\.metrics:type=([^,]+),keyspace=([^,]+),scope=([^,]+),name=([^,]+)$");
     private static Pattern typeAndPathAndScopeAndNamePattern = Pattern.compile("^org\\.apache\\.cassandra\\.metrics:type=([^,]+),path=([^,]+),scope=([^,]+),name=([^,]+)$");
+    private static Pattern hintsCreatedPattern = Pattern.compile("^Hints_created-(.+)$");
+    private static Pattern legalNamePattern = Pattern.compile("^[a-zA-Z_:][a-zA-Z0-9_:]*$");
 
     private List<String> labelNames = new ArrayList<String>();
     private List<String> labelValues = new ArrayList<String>();
@@ -43,6 +45,17 @@ class MetricMetadata {
             switch (typeAndNameMatcher.group(1)) {
                 case "ClientRequestMetrics":
                     name = "cassandra_client_request_" + CamelCase.toSnakeCase(typeAndNameMatcher.group(2));
+                    break;
+                case "HintedHandOffManager":
+                    Matcher hintsCreatedMatcher = hintsCreatedPattern.matcher(typeAndNameMatcher.group(2));
+                    if (hintsCreatedMatcher.find()) {
+                        name = "cassandra_hinted_hand_off_hints_created";
+                        labelNames.add("address");
+                        labelValues.add(hintsCreatedMatcher.group(1));
+                    } else {
+                        LOGGER.warning("unhandled metric: " + mbean);
+                        doNotReport = true;
+                    }
                     break;
                 case "Connection":
                 case "ColumnFamily":
@@ -107,6 +120,11 @@ class MetricMetadata {
             }
         } else {
             LOGGER.warning("unhandled metric: " + mbean);
+            doNotReport = true;
+        }
+
+        if (!doNotReport && !legalNamePattern.matcher(name).find()) {
+            LOGGER.warning("generated illegal metric name for mbean: " + mbean);
             doNotReport = true;
         }
     }

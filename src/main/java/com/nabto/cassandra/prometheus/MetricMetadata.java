@@ -51,7 +51,6 @@ class MetricMetadata {
                 // Note: Compaction.PendingTasksByTableName exists, but that gets dropped because of the gauge type.
             case "CQL":
             case "HintsService":
-            case "Index":
             case "MemtablePool":
             case "ReadRepair":
             case "Storage":
@@ -191,6 +190,20 @@ class MetricMetadata {
                 name = "cassandra_cross_node_latency";
                 labelNames.add("datacenter");
                 labelValues.add(m.group(1));
+                break;
+            case "Index":
+                // TODO: This probably needs revisiting.
+                // org.apache.cassandra.metrics.Index.IndexedEntrySize.RowIndexEntry
+                // org.apache.cassandra.metrics.Index.IndexInfoGets.RowIndexEntry
+                m = parts2Pattern.matcher(rest);
+                if (!m.find()) {
+                    LOGGER.warning("unhandled metric: " + dropwizardName);
+                    doNotReport = true;
+                    break;
+                }
+                name = "cassandra_" + CamelCase.toSnakeCase(m.group(1));
+                labelNames.add("index");
+                labelValues.add(m.group(2));
                 break;
             default:
                 LOGGER.warning("unhandled metric: " + dropwizardName);

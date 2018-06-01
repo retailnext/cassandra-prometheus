@@ -54,9 +54,21 @@ class MetricMetadata {
             case "MemtablePool":
             case "ReadRepair":
             case "Storage":
-            case "Streaming":
                 // This and preceding cases are OK to handle generically.
                 name = String.format("cassandra_%s_%s", CamelCase.toSnakeCase(type), CamelCase.toSnakeCase(rest));
+                break;
+            case "Streaming":
+                // org.apache.cassandra.metrics.Streaming.ActiveOutboundStreams
+                // org.apache.cassandra.metrics.Streaming.IncomingBytes.10.7.0.27
+                // org.apache.cassandra.metrics.Streaming.OutgoingBytes.10.7.0.27
+                m = partAndRestPattern.matcher(rest);
+                if (m.find()) {
+                    name = "cassandra_streaming_" + CamelCase.toSnakeCase(m.group(1));
+                    labelNames.add("address");
+                    labelValues.add(m.group(2));
+                    break;
+                }
+                name = "cassandra_streaming_" + CamelCase.toSnakeCase(rest);
                 break;
             case "keyspace":
                 doNotReport = true;
